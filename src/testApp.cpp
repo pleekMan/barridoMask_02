@@ -7,8 +7,7 @@ void testApp::setup(){
     
     canvasWidth = 1024;
     canvasHeight = 768;
-    
-    
+        
     fondo.loadImage("tvSignal.jpg");
     
     // INIT MASK TEMP
@@ -21,6 +20,21 @@ void testApp::setup(){
     maskPx.allocate(canvasWidth, canvasHeight, OF_IMAGE_COLOR_ALPHA);
     finalCanvas.allocate(canvasWidth, canvasHeight, OF_IMAGE_COLOR_ALPHA);
     
+    //------ KINECT INIT
+    kinect.setRegistration(true);
+    kinect.init();
+    kinect.open();
+    if(kinect.isConnected()) {
+		ofLogNotice() << "sensor-emitter dist: " << kinect.getSensorEmitterDistance() << "cm";
+		ofLogNotice() << "sensor-camera dist:  " << kinect.getSensorCameraDistance() << "cm";
+		ofLogNotice() << "zero plane pixel size : " << kinect.getZeroPlanePixelSize() << "mm";
+		ofLogNotice() << "zero plane dist: " << kinect.getZeroPlaneDistance() << "mm";
+	}
+    
+    //kinect.setCameraTiltAngle(15);
+    
+    kinectDepth.allocate(kinect.width, kinect.height);
+    
     //------
     
     maskShader.load("maskShader");
@@ -32,10 +46,17 @@ void testApp::setup(){
 //--------------------------------------------------------------
 void testApp::update(){
     
+    /*
     mousePosLayer.begin();
     ofSetColor(0);
     ofCircle(mouseX, mouseY, 50);
     mousePosLayer.end();
+    */
+    
+    kinect.update();
+    if(kinect.isFrameNew()) {
+    kinectDepth.setFromPixels(kinect.getDepthPixels(), kinect.width, kinect.height);
+    }
 
 }
 
@@ -43,6 +64,7 @@ void testApp::update(){
 void testApp::draw(){
     
     ofSetWindowTitle(ofToString(ofGetFrameRate()));
+    ofBackground(100);
 
     /*
     pxFinalCanvas = finalCanvas.getPixels();
@@ -82,7 +104,7 @@ void testApp::draw(){
     //--------
     fondo.draw(0,0);
     
-    
+    /*
     maskShader.begin();
     
     ofSetColor(0);
@@ -93,14 +115,24 @@ void testApp::draw(){
     
     
     maskShader.end();
+    */
     
+    //cout << mouseX << endl;
     
-    cout << mouseX << endl;
+    kinectDepth.draw(0,0);
     
 }   
 
 //--------------------------------------------------------------
 void testApp::keyPressed(int key){
+    if (key == OF_KEY_UP) {
+        kinect.setCameraTiltAngle(kinect.getCurrentCameraTiltAngle() + 5);
+        cout << "Angle + 5" << endl;
+    }
+    if (key == OF_KEY_DOWN) {
+        kinect.setCameraTiltAngle(kinect.getCurrentCameraTiltAngle() - 5);
+        cout << "Angle - 5" << endl;
+    }
 
 }
 

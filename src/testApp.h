@@ -3,6 +3,7 @@
 #include "ofMain.h"
 
 #include "ofxOpenCv.h"
+#include "ofxKinect.h"
 
 
 class testApp : public ofBaseApp{
@@ -35,6 +36,10 @@ ofxCvColorImage colorImage;
 ofxCvGrayscaleImage grayImage;
 ofxCvGrayscaleImage whiteMask;
 ofxCvColorImage paintImage;
+    
+    
+    ofxKinect kinect;
+    ofxCvGrayscaleImage kinectDepth;
 
 
 int canvasWidth, canvasHeight;
