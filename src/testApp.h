@@ -30,7 +30,6 @@ unsigned char *pxFinalCanvas;
 ofPixels maskPx;
 
 ofFbo mousePosLayer;
-ofFbo backLayer;
 
 ofxCvColorImage colorImage;
 ofxCvGrayscaleImage grayImage;
@@ -40,6 +39,9 @@ ofxCvColorImage paintImage;
     
     ofxKinect kinect;
     ofxCvGrayscaleImage kinectDepth;
+    ofFbo backLayer;
+    ofFbo kinectDepthBuffer;
+    
 
 
 int canvasWidth, canvasHeight;

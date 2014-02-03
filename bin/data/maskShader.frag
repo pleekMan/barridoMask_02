@@ -1,37 +1,37 @@
 // fragment shader
+
+uniform vec2 scaling;
 uniform vec2 mouse;
+
+uniform sampler2DRect backTex;
+uniform sampler2DRect depthTex;
+
+//varying vec2 coordes;
+
+varying vec4 gl_TexCoord[];
 
 
 void main()
 {   
-    /*
-    // gl_FragCoord contains the window relative coordinate for the fragment.
-    // we use gl_FragCoord.x position to control the red color value.
-    // we use gl_FragCoord.y position to control the green color value.
-    // please note that all r, g, b, a values are between 0 and 1.
- 
-    //float windowWidth = 1024.0;
-    //float windowHeight = 768.0;
- 
-    float r = gl_FragCoord.x / windowWidth;
-    float g = gl_FragCoord.y / windowHeight;
-    float b = 1.0;
-    float a = 1.0;
-    outputColor = vec4(r, g, b, a);
-    */
+
+        
+//FragCoord return ScreenSpace. Using scaling to correctly read pixels off the smaller kinect fbo
+// cannot make TexCoords[0] work.. 
+
+vec2 depthPoint = vec2(gl_FragCoord.x * scaling.x, gl_FragCoord.y * scaling.y);
+
+vec3 depthColors = texture2DRect(depthTex, depthPoint).rgb;
+//backColors = texture2DRect(backTex, gl_TexCoord[0].st).rgba;
+vec3 backColors = texture2DRect(backTex, gl_FragCoord.xy).rgb;
 
 
-    float r = gl_FragCoord.x;
-
-    if (r < mouse.x)
-    {
-        gl_FragColor = vec4(1.0,0.0,0.0,0.5);
-    } else {
-        gl_FragColor =  vec4(0.0,1.0,0.0,0.5) ;
-    }
-
-    //gl_FragColor = vec4(1.0,0.0,0.0,1.0);
-
+if (depthColors.r > 0.5)
+{
+    gl_FragColor = vec4(backColors,1.0);
+} else {
+    gl_FragColor =  vec4(0.0,0.0,0.0,1.0);
+}
+        
 
 
 }
