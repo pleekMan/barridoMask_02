@@ -36,6 +36,9 @@ ofxCvColorImage paintImage;
     ofFbo backLayer;
     ofFbo kinectDepthBuffer;
     
+    ofxCvContourFinder kinectContours;
+    vector <ofPolyline> downSampledContour;
+    
     float nearThreshold, farThreshold;
 
 

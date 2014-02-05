@@ -65,19 +65,73 @@ void testApp::update(){
     // DRAWING ONTO KINECT FBO
 
     kinect.update();
+    
+    // TO FINE-TUNE THE BLOB-CONTOUR-THINGY-EVERYTHING.
+    // PLAY WITH PARAMETERS ON findContours() and getResampledByCount().getSmoothed()
+    
     if(kinect.isFrameNew()) {
         kinectDepth.setFromPixels(kinect.getDepthPixels(), kinect.width, kinect.height);
         kinectDepth.mirror(true, true); // MIRROR CUZ SHADERS KINDA WORKS INVERTED... ???
-        kinectDepth.threshold(80);
-        kinectDepth.threshold(ofxImage)
-        //kinectDepth.blurHeavily();
-        //kinectDepth.erode();
-        //kinectDepth.dilate();
- 
+        
+        // para probar.
+        //Al momento de usar The Postaline, hacer un kinectDepth.threshold(200, true);
+        // para invertirlo, ya q la kinect va estar colgando del techo
+        kinectDepth.threshold(230);
+        
+        kinectContours.findContours(kinectDepth, 100, 30000, 10, false);
+        
+        
+        // DOWNSAMPLE THE RAW CONTOURS
+        downSampledContour.clear();
+        
+        ofNoFill();
+        for(unsigned int i = 0; i < kinectContours.blobs.size(); i++) {
+			
+            ofPolyline cur;
+			// add all the current vertices to cur polyline
+			cur.addVertices(kinectContours.blobs[i].pts);
+			cur.setClosed(true);
+			
+			// add the cur polyline to downSampledContours vector<ofPolyline>
+			downSampledContour.push_back(cur.getResampledByCount(80).getSmoothed(8));
+            
+		}
+        
     
         kinectDepthBuffer.begin();
-        ofClear(0);
-        kinectDepth.draw(0,0);
+        ofClear(0,255);
+        
+        // DRAW RAW DEPTH
+        //ofSetColor(255);
+        //kinectDepth.draw(0,0);
+        
+        /*
+        // DRAW RAW CONTOURS
+        ofSetColor(0,0,100);
+        for (int i = 0; i < kinectContours.nBlobs; i++){
+            kinectContours.blobs[i].draw(0,0);
+        }
+        */
+        
+        // DRAW THE DOWNSAMPLED CONTOURS
+        // CANNOT DRAW A FILLED ofPolyline. DRAWING A ofPath OUT OF IT.
+        ofSetColor(255,255);
+        ofFill();
+        for (int i=0; i < downSampledContour.size(); i++) {
+            
+            
+            vector <ofPoint> polylinePoints = downSampledContour[i].getVertices();
+            
+            ofBeginShape();
+            for (int j=0; j < polylinePoints.size(); j++) {
+                ofVertex(polylinePoints[j]);
+            }
+            ofEndShape(true);
+            
+            downSampledContour[i].draw();
+        }
+        
+        
         kinectDepthBuffer.end();
     }
    
@@ -94,24 +148,12 @@ void testApp::draw(){
     ofSetWindowTitle(ofToString(ofGetFrameRate()));
     ofBackground(100);
 
-    
-    
     //cout << mouseX << endl;
-    
-    //mousePosLayer.draw(0, 0);
-    //kinectDepth.draw(0,0);
     
         
     float horizontalProportion = kinectDepthBuffer.getWidth() / backLayer.getWidth() ;
     float verticalProportion = kinectDepthBuffer.getHeight() / backLayer.getHeight();
-    
-    /*
-    backLayer.begin();
-    ofClear(0);
-    ofSetColor(255);
-    fondo.draw(0,0);
-    backLayer.end();
-    */
+
     
     maskShader.begin();
     
@@ -121,9 +163,7 @@ void testApp::draw(){
     
     maskShader.setUniformTexture("backTex", backLayer.getTextureReference(), 0);
     maskShader.setUniformTexture("depthTex", kinectDepthBuffer.getTextureReference(), 1);
-    
-    //maskShader.setUniform1f("time", ofGetFrameNum() * 0.5);
-    //maskShader.setUniform2f("resolution", float(canvasWidth), float(canvasHeight));
+
     
     ofRect(0, 0, ofGetWidth() * 0.5, ofGetHeight() * 0.5);
     
