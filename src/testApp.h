@@ -24,12 +24,6 @@ class testApp : public ofBaseApp{
 		void gotMessage(ofMessage msg);
     
 ofImage fondo;
-ofImage finalCanvas;
-unsigned char *pxMask;
-unsigned char *pxFinalCanvas;
-ofPixels maskPx;
-
-ofFbo mousePosLayer;
 
 ofxCvColorImage colorImage;
 ofxCvGrayscaleImage grayImage;
@@ -42,6 +36,7 @@ ofxCvColorImage paintImage;
     ofFbo backLayer;
     ofFbo kinectDepthBuffer;
     
+    float nearThreshold, farThreshold;
 
 
 int canvasWidth, canvasHeight;

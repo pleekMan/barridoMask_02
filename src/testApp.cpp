@@ -10,16 +10,6 @@ void testApp::setup(){
         
     fondo.loadImage("tvSignal.jpg");
     
-    // INIT MASK TEMP
-    mousePosLayer.allocate(canvasWidth, canvasHeight);
-    mousePosLayer.begin();
-    ofClear(0, 0, 0);
-    mousePosLayer.end();
-    
-    
-    maskPx.allocate(canvasWidth, canvasHeight, OF_IMAGE_COLOR_ALPHA);
-    finalCanvas.allocate(canvasWidth, canvasHeight, OF_IMAGE_COLOR_ALPHA);
-    
     backLayer.allocate(canvasWidth, canvasHeight);
     
     //------ KINECT INIT
@@ -34,6 +24,9 @@ void testApp::setup(){
 	}
     
     //kinect.setCameraTiltAngle(15);
+    
+    nearThreshold = 0.2;
+    farThreshold = 0.5;
     
     kinectDepth.allocate(kinect.width, kinect.height);
     
@@ -74,7 +67,12 @@ void testApp::update(){
     kinect.update();
     if(kinect.isFrameNew()) {
         kinectDepth.setFromPixels(kinect.getDepthPixels(), kinect.width, kinect.height);
-        kinectDepth.mirror(true, true);
+        kinectDepth.mirror(true, true); // MIRROR CUZ SHADERS KINDA WORKS INVERTED... ???
+        kinectDepth.threshold(80);
+        kinectDepth.threshold(ofxImage)
+        //kinectDepth.blurHeavily();
+        //kinectDepth.erode();
+        //kinectDepth.dilate();
  
     
         kinectDepthBuffer.begin();
@@ -96,56 +94,7 @@ void testApp::draw(){
     ofSetWindowTitle(ofToString(ofGetFrameRate()));
     ofBackground(100);
 
-    /*
-    pxFinalCanvas = finalCanvas.getPixels();
     
-    
-    mousePosLayer.readToPixels(maskPx);
-    pxMask = maskPx.getPixels();
-    
-    
-    
-    for (int x=0; x < canvasWidth; x++) {
-        for (int y=0; y < canvasHeight; y++) {
-            
-            
-            int loc = x + (y * canvasWidth);
-            
-            //cout << loc << endl;
-            
-            int brightness = int(pxMask[loc * 4]);
-            
-            if (brightness > 250) {
-                pxFinalCanvas[loc * 4 + 0] = fondo.getPixels()[loc * 3 + 0];
-                pxFinalCanvas[loc * 4 + 1] = fondo.getPixels()[loc * 3 + 1];
-                pxFinalCanvas[loc * 4 + 2] = fondo.getPixels()[loc * 3 + 2];
-                pxFinalCanvas[loc * 4 + 3] = 255;
-            }
-        }
-    }
-    
-    finalCanvas.update();
-    finalCanvas.draw(0,0);
-    
-    fondo.draw(0,0, 200,200);
-    mousePosLayer.draw(200, 0, 200,200);
-     */
-    
-    //--------
-    
-    
-    /*
-    maskShader.begin();
-    
-    ofSetColor(0);
-    
-
-    maskShader.setUniform2f("mouse", mouseX * 1.0, mouseY * 1.0);
-    ofRect(0, 0, ofGetWidth(), ofGetHeight());
-    
-    
-    maskShader.end();
-    */
     
     //cout << mouseX << endl;
     
@@ -167,7 +116,8 @@ void testApp::draw(){
     maskShader.begin();
     
     maskShader.setUniform2f("scaling", horizontalProportion , verticalProportion);
-    //maskShader.setUniform2f("mouse", mouseX / float(canvasWidth) , mouseY / float(canvasHeight));
+    maskShader.setUniform1f("nearThreshold", 0.5);
+    maskShader.setUniform1f("farThreshold", 0.7);
     
     maskShader.setUniformTexture("backTex", backLayer.getTextureReference(), 0);
     maskShader.setUniformTexture("depthTex", kinectDepthBuffer.getTextureReference(), 1);
@@ -175,11 +125,11 @@ void testApp::draw(){
     //maskShader.setUniform1f("time", ofGetFrameNum() * 0.5);
     //maskShader.setUniform2f("resolution", float(canvasWidth), float(canvasHeight));
     
-    ofRect(0, 0, ofGetWidth(), ofGetHeight());
+    ofRect(0, 0, ofGetWidth() * 0.5, ofGetHeight() * 0.5);
     
     maskShader.end();
     
-    //kinectDepthBuffer.draw(canvasWidth - kinect.getWidth(), canvasHeight - kinect.getHeight());
+    kinectDepthBuffer.draw(canvasWidth - kinect.getWidth(), canvasHeight - kinect.getHeight());
     //backLayer.draw(canvasWidth - kinect.getWidth(), canvasHeight - kinect.getHeight(), 128, 96);
     
     //backLayer.draw(0,0);

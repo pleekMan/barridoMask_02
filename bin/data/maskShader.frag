@@ -2,6 +2,8 @@
 
 uniform vec2 scaling;
 uniform vec2 mouse;
+uniform float nearThreshold;
+uniform float farThreshold;
 
 uniform sampler2DRect backTex;
 uniform sampler2DRect depthTex;
@@ -14,7 +16,7 @@ varying vec4 gl_TexCoord[];
 void main()
 {   
 
-        
+            
 //FragCoord return ScreenSpace. Using scaling to correctly read pixels off the smaller kinect fbo
 // cannot make TexCoords[0] work.. 
 
@@ -25,7 +27,7 @@ vec3 depthColors = texture2DRect(depthTex, depthPoint).rgb;
 vec3 backColors = texture2DRect(backTex, gl_FragCoord.xy).rgb;
 
 
-if (depthColors.r > 0.5)
+if (depthColors.r > nearThreshold && depthColors.r < farThreshold)
 {
     gl_FragColor = vec4(backColors,1.0);
 } else {
